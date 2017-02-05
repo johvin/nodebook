@@ -86,8 +86,8 @@ const EE = require('events');
 
 ### newListener 事件
 
-- `eventName` <String> | <Symbol> 即将被监听的事件名
-- `listener` <Function> 事件处理函数
+- `eventName` &lt;String&gt; | &lt;Symbol&gt; 即将被监听的事件名
+- `listener` &lt;Function&gt; 事件处理函数
 
 `EE` 实例会在一个监听函数被添加到监听器函数内部队列之前发射 `newListener` 事件。被监听的事件名和监听器函数的引用作为参数传递给 `newListener` 事件的处理函数。
 
@@ -122,3 +122,67 @@ myE.emit('event');
 该函数已弃用，请使用 `emitter.listenerCount(eventName)`。
 
 ### EventEmitter.defaultMaxListeners
+
+默认单个事件的最大监听函数是 `10`。这个阈值可以通过实例方法  `emitter.setMaxListeners(n)` 来修改。如果要修改所有实例的默认阈值，可以直接修改类属性  `EventEmitter.defaultMaxListeners`。
+
+*使用这个方式修改需要注意一点：这种修改不仅对之后创建的 `EE` 实例有效，对修改前创建的实例也有效果。不过即便这样，使用 `emitter.setMaxListeners(n)` 方法会有更高的优先级。*
+
+注意：这个并不是硬约束。`EE` 实例允许添加超过限制的监听函数，但同时也会向 `stderr` 输出一个“EventEmitter 可能会内存泄漏”的跟踪警告。对于单个 `EE`，可以使用 `emitter.getMaxListeners()` 和 `emitter.setMaxListeners()` 方法临时避免这个警告：
+
+```js
+emitter.setMaxListeners(emitter.getMaxListeners() + 1);
+emitter.once('event', () => {
+  // do stuff
+  emitter.setMaxListeners(Max.max(emitter.getMaxListeners() - 1, 0));
+});
+```
+
+命令行标志 `--trace-warnings` 可以用来显示类似警告的堆栈跟踪信息。警告信息可以使用 `process.on('warning')` 检测到，该信息还会包含额外的 `emitter`，`type` 和 `count` 属性，分别是指向 `EE` 的实例引用，事件名称以及相关监听函数的数量。
+
+### emitter.addListener(eventName, listener)
+
+`emitter.on(eventName, listener)` 方法的别称。
+
+### emitter.emit(eventName[, ...args])
+
+发射指定事件名的事件，并按照监听函数注册的顺序顺序调用它们，并将提供的参数传递给它们。
+
+如果事件存在监听函数则返回 true，否则返回 false。
+
+### emitter.eventNames()
+
+返回一个数组，里面包含当前发射器中注册的监听事件列表。这些值的类型包括字符串和 Symbol。
+
+```js
+const EE = require('events');
+const myE = new EE();
+
+myE.on('foo', () => {});
+myE.on('bar', () => {});
+
+const sym = Symbol('symbol');
+myE.on(sym, () => {});
+
+console.log(myE.eventNames());
+// Prints: [ 'foo', 'bar', Symbol(symbol) ]
+```
+
+### emitter.getMaxListeners()
+
+返回 `emitter` 当前的最大监听函数的个数。这个数值是 `emitter.setMaxListeners(n)` 或者等于 `EventEmitter.defaultMaxListeners`。
+
+### emitter.listenerCount(eventName)
+
+返回事件名是 eventName 的监听函数的个数。eventName 的类型是字符串或者 Symbol。
+
+### emitter.listeners(eventName)
+
+返回 eventName 事件的监听函数的拷贝数组。
+
+```js
+server.on('connection', (stream) => {
+  console.log('someone connected!')；
+});
+console.log(util.inspect(server.listeners('connection')));
+// Prints: [ [Function] ]
+```

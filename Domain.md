@@ -97,7 +97,7 @@ function handleRequest(req, res) {
 }
 ```
 
-## 像 Error 对象添加额外信息
+## 向 Error 对象添加额外信息
 
 一个错误对象路由到 domain 时，一些额外的字段会被添加到其上。
 
@@ -190,13 +190,13 @@ d.run(() => {
 
 返回一个数组，包括被显示添加到 domain 的定时器和 `EE`。
 
-### domain.add(<EventEimitter> | <Timer>)
+### domain.add(&lt;EventEimitter&gt; | &lt;Timer&gt;)
 
 显式添加 emitter （包括 `EE` 和 `Timer`）到 domain。如果 emitter 的任何处理函数抛出错误，或者该 emitter 发射一个错误事件，这个错误都会被路由到 domain 的错误事件，这一行为与隐式绑定相同。这一行为对于定时器也有相同的表现。
 
 如果 emitter 已经绑定到某个 domain，那么调用此接口，该 emitter 会从前一个 domain 中移除，然后绑定到调用的 domain 上。
 
-### domain.remove(<EventEimitter> | <Timer>)
+### domain.remove(&lt;EventEimitter&gt; | &lt;Timer&gt;)
 
 从 domain 中移除指定 emitter，功能与 `domain.add(emitter)` 相对。
 
